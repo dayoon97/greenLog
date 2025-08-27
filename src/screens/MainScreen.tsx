@@ -176,7 +176,12 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
         onToggle={isPhoto => setViewMode(isPhoto ? 'photo' : 'calendar')}
       />
       <View style={styles.contentContainer}>
-        {viewMode === 'calendar' ? (
+        <View
+          style={{
+            flex: 1,
+            display: viewMode === 'calendar' ? 'flex' : 'none',
+          }}
+        >
           <Calendar
             dayComponent={dayComponent}
             markedDates={markedDates}
@@ -193,29 +198,59 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
             monthFormat={'yyyy년 M월'}
             firstDay={0}
           />
-        ) : photoDiaries.length > 0 ? (
-          <FlatList
-            data={photoDiaries}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => onDayPress(item.date)}>
-                <Image
-                  source={{ uri: item.photoUri }}
-                  style={styles.photoItem}
-                />
-              </TouchableOpacity>
-            )}
-            numColumns={3}
-          />
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={{ fontSize: 48, marginBottom: 16 }}>📸</Text>
-            <Text style={styles.emptyText}>아직 등록된 사진이 없습니다</Text>
-            <Text style={styles.emptySubText}>
-              캘린더에서 날짜를 선택하여 식물 사진을 추가해보세요
-            </Text>
-          </View>
-        )}
+        </View>
+        <View
+          style={{
+            flex: 1,
+            display: viewMode === 'photo' ? 'flex' : 'none',
+            backgroundColor: 'white',
+          }}
+        >
+          {photoDiaries.length > 0 ? (
+            <FlatList
+              data={photoDiaries}
+              keyExtractor={item => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.diaryCard}
+                  onPress={() => onDayPress(item.date)}
+                >
+                  <Image
+                    source={{ uri: item.photoUri }}
+                    style={styles.diaryImage}
+                  />
+                  <View style={styles.diaryInfo}>
+                    <Text style={styles.diaryDate}>{item.date}</Text>
+                    <View style={styles.diaryTags}>
+                      {item.activities.map(activity => (
+                        <View
+                          key={activity}
+                          style={[
+                            styles.tag,
+                            {
+                              backgroundColor:
+                                getActivityColor(activity) + '30',
+                            },
+                          ]}
+                        >
+                          <Text style={styles.tagText}>{activity}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>📸</Text>
+              <Text style={styles.emptyText}>아직 등록된 사진이 없습니다</Text>
+              <Text style={styles.emptySubText}>
+                캘린더에서 날짜를 선택하여 식물 사진을 추가해보세요
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -276,9 +311,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptySubText: { color: 'gray', textAlign: 'center' },
-  photoItem: {
-    width: Dimensions.get('window').width / 3,
-    height: Dimensions.get('window').width / 3,
+  diaryCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  diaryImage: {
+    width: '100%',
+    aspectRatio: 1,
+  },
+  diaryInfo: {
+    padding: 12,
+  },
+  diaryDate: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  diaryTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
 });
 
