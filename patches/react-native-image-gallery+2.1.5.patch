@@ -1,0 +1,42 @@
+diff --git a/node_modules/react-native-image-gallery/src/Gallery.js b/node_modules/react-native-image-gallery/src/Gallery.js
+index 5cc4835..06cc32d 100644
+--- a/node_modules/react-native-image-gallery/src/Gallery.js
++++ b/node_modules/react-native-image-gallery/src/Gallery.js
+@@ -1,5 +1,6 @@
+ import React, { PureComponent } from 'react';
+-import { View, ViewPropTypes } from 'react-native';
++import { View } from 'react-native';
++import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+ import PropTypes from 'prop-types';
+ import { createResponder } from './libraries/GestureResponder';
+ import TransformableImage from './libraries/TransformableImage';
+diff --git a/node_modules/react-native-image-gallery/src/libraries/TransformableImage/index.js b/node_modules/react-native-image-gallery/src/libraries/TransformableImage/index.js
+index 8ff8469..92ab8cd 100644
+--- a/node_modules/react-native-image-gallery/src/libraries/TransformableImage/index.js
++++ b/node_modules/react-native-image-gallery/src/libraries/TransformableImage/index.js
+@@ -1,5 +1,6 @@
+ import React, { PureComponent } from 'react';
+-import { View, Text, Image, ViewPropTypes } from 'react-native';
++import { View, Text, Image } from 'react-native';
++import { ViewPropTypes } from 'deprecated-react-native-prop-types'; // 새로 import
+ import PropTypes from 'prop-types';
+ import ViewTransformer from '../ViewTransformer';
+ 
+diff --git a/node_modules/react-native-image-gallery/src/libraries/ViewPager/index.js b/node_modules/react-native-image-gallery/src/libraries/ViewPager/index.js
+index b786ad1..839fee6 100644
+--- a/node_modules/react-native-image-gallery/src/libraries/ViewPager/index.js
++++ b/node_modules/react-native-image-gallery/src/libraries/ViewPager/index.js
+@@ -2,12 +2,12 @@ import React, { PureComponent } from 'react';
+ import {
+     View,
+     FlatList,
+-    ViewPropTypes,
+     InteractionManager,
+     Dimensions
+ } from 'react-native';
+ import PropTypes from 'prop-types';
+ import Scroller from '../Scroller';
++import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+ import { createResponder } from '../GestureResponder';
+ 
+ const MIN_FLING_VELOCITY = 0.5;
