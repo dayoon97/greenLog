@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, JSX } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View, StatusBar } from 'react-native';
 import { ThemeProvider, createTheme } from '@rneui/themed'; // createTheme을 ThemeProvider 옆에서 직접 import합니다.
@@ -30,17 +30,22 @@ const App = (): JSX.Element => {
       const existingIndex = prev.findIndex(d => d.date === newEntryData.date);
 
       if (existingIndex > -1) {
-        // 기존 기록이 있을 경우
-        const existingEntry = prev[existingIndex]; // 기존 Entry를 명확히 가져옴
-        if (existingEntry) {
-          // 혹시 모를 undefined 체크
-          const updatedDiaries = [...prev];
-          updatedDiaries[existingIndex] = { ...existingEntry, ...newEntryData };
-          return updatedDiaries;
-        }
+        // 기록이 있으면, 기존 배열을 복사하고 해당 항목만 교체합니다.
+        const updatedDiaries = [...prev];
+        updatedDiaries[existingIndex] = {
+          ...updatedDiaries[existingIndex],
+          ...newEntryData,
+        };
+        return updatedDiaries;
+      } else {
+        // 기록이 없으면, 새 기록을 배열에 추가합니다.
+        const maxId = prev.reduce((max, entry) => {
+          const entryId = parseInt(entry.id, 10);
+          return isNaN(entryId) ? max : Math.max(max, entryId);
+        }, 0);
+        const newId = (maxId + 1).toString();
+        return [...prev, { id: newId, ...newEntryData }];
       }
-      // 새 기록이거나 기존 기록을 찾지 못했거나 기존 기록이 undefined였을 경우
-      return [...prev, { id: Date.now().toString(), ...newEntryData }];
     });
   };
 

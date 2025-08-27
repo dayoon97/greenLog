@@ -1,6 +1,5 @@
-import React, { useCallback, useState, JSX } from 'react';
+import React, { useCallback, useMemo, useState, JSX } from 'react';
 import { Pressable } from 'react-native';
-
 import {
   View,
   Text,
@@ -10,7 +9,8 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { Calendar, LocaleConfig, DateData } from 'react-native-calendars';
+import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DiaryEntry } from '../types';
 import Header from '../components/Header';
@@ -44,20 +44,11 @@ LocaleConfig.locales['ko'] = {
     '11월',
     '12월',
   ],
-  dayNames: [
-    '일요일',
-    '월요일',
-    '화요일',
-    '수요일',
-    '목요일',
-    '금요일',
-    '토요일',
-  ],
+  dayNames: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
   dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
 };
 LocaleConfig.defaultLocale = 'ko';
 
-// 활동별 색상
 const getActivityColor = (activity: string): string => {
   switch (activity) {
     case '물주기':
@@ -79,44 +70,77 @@ const getActivityColor = (activity: string): string => {
   }
 };
 
-const CustomDay = ({ date, state, entries, onPress }) => {
-  const isToday = state === 'today';
-  const hasEntry = entries && entries.length > 0;
+interface CustomMarkingProps extends MarkingProps {
+  activities?: string[];
+}
 
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.dayContainer,
-        isToday && styles.todayContainer,
-        hasEntry && styles.entryContainer,
-        pressed && styles.pressedContainer, // 🔥 눌릴 때만 연한 회색
-      ]}
-    >
-      <Text
-        style={[styles.dayText, state === 'disabled' && styles.disabledText]}
+const CustomDay = React.memo(
+  ({
+    date,
+    state,
+    marking,
+    onPress,
+  }: {
+    date?: DateData;
+    state?: string;
+    marking?: CustomMarkingProps;
+    onPress?: (date: DateData) => void;
+  }) => {
+    const isToday = state === 'today';
+    const hasEntry =
+      marking && marking.activities && marking.activities.length > 0;
+
+    return (
+      <Pressable
+        onPress={() => onPress && date && onPress(date)}
+        style={({ pressed }) => [
+          styles.dayContainer,
+          isToday && styles.todayContainer,
+          hasEntry && styles.entryContainer,
+          pressed && styles.pressedContainer,
+        ]}
       >
-        {date.day}
-      </Text>
+        <Text
+          style={[styles.dayText, state === 'disabled' && styles.disabledText]}
+        >
+          {date?.day}
+        </Text>
 
-      {hasEntry && (
-        <View style={styles.tagContainer}>
-          {entries[0].activities.slice(0, 1).map((activity, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.tag,
-                { backgroundColor: getActivityColor(activity) + '30' },
-              ]}
-            >
-              <Text style={styles.tagText}>{activity}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </Pressable>
-  );
-};
+        {hasEntry && (
+          <View style={styles.tagContainer}>
+            {/* 처음 2개의 활동 태그 */}
+            {marking.activities?.slice(0, 2).map(activity => (
+              <View
+                key={activity}
+                style={[
+                  styles.tag,
+                  {
+                    backgroundColor:
+                      getActivityColor(activity) + '30',
+                  },
+                ]}
+              >
+                <Text style={styles.tagText}>{activity}</Text>
+              </View>
+            ))}
+
+            {/* 2개가 넘을 경우 +N 태그 표시 */}
+            {marking.activities.length > 2 && (
+              <View
+                key="more"
+                style={[styles.tag, { backgroundColor: '#E5E7EB' }]}
+              >
+                <Text style={styles.tagText}>
+                  +{marking.activities.length - 2}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </Pressable>
+    );
+  },
+);
 
 type MainScreenProps = {
   diaries: DiaryEntry[];
@@ -127,39 +151,20 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets();
   const [viewMode, setViewMode] = useState<'calendar' | 'photo'>('calendar');
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-  const diariesByDate = React.useMemo(() => {
+  const markedDates = useMemo(() => {
     return diaries.reduce((acc, entry) => {
-      (acc[entry.date] = acc[entry.date] || []).push(entry);
+      if (entry.date) {
+        acc[entry.date] = { activities: entry.activities };
+      }
       return acc;
-    }, {} as { [key: string]: DiaryEntry[] });
+    }, {} as { [key: string]: CustomMarkingProps });
   }, [diaries]);
 
-  const handleDayPress = (dateStr: string) => {
-    if (selectedDate === dateStr) {
-      // 이미 선택된 날짜 → 모달 열기
-      onDayPress(dateStr);
-    } else {
-      // 새로운 날짜 선택
-      setSelectedDate(dateStr);
-    }
-  };
+  const dayComponent = useCallback((props: any) => {
+    return <CustomDay {...props} />;
+  }, []);
 
-  const dayComponent = useCallback(
-    ({ date, state }) => (
-      <CustomDay
-        date={date}
-        state={state}
-        entries={diariesByDate[date.dateString] || []}
-        selected={selectedDate === date.dateString}
-        onPress={() => handleDayPress(date.dateString)}
-      />
-    ),
-    [diariesByDate, selectedDate],
-  );
-
-  const photoDiaries = React.useMemo(
+  const photoDiaries = useMemo(
     () => diaries.filter(d => d.photoUri),
     [diaries],
   );
@@ -174,6 +179,8 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
         {viewMode === 'calendar' ? (
           <Calendar
             dayComponent={dayComponent}
+            markedDates={markedDates}
+            onDayPress={day => onDayPress(day.dateString)}
             theme={{
               arrowColor: 'black',
               monthTextColor: 'black',
@@ -181,6 +188,7 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
               textMonthFontWeight: 'bold',
               dayHeaderFontSize: 12,
               dayHeaderFontWeight: '500',
+              todayTextColor: '#22C55E',
             }}
             monthFormat={'yyyy년 M월'}
             firstDay={0}
@@ -216,7 +224,6 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
 const styles = StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: 'white' },
   contentContainer: { flex: 1, backgroundColor: 'white' },
-
   dayContainer: {
     height: 90,
     width: Dimensions.get('window').width / 7 - 2,
@@ -229,7 +236,6 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     backgroundColor: '#F9FAFB',
   },
-
   todayContainer: {
     backgroundColor: '#DCFCE7',
     borderWidth: 1,
@@ -240,41 +246,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderRadius: 12,
   },
-  selectedContainer: {
-    backgroundColor: '#E5E7EB',
-    borderRadius: 12,
-  },
   pressedContainer: {
-    backgroundColor: '#E5E7EB', // 연한 회색
-    borderRadius: 12,
+    backgroundColor: '#E5E7EB',
   },
   dayText: {
     fontSize: 14,
     fontWeight: '500',
     color: '#4B5563',
   },
-
   disabledText: { color: '#ccc' },
   tagContainer: {
     marginTop: 4,
-    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
   },
-  tag: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  tagText: { fontSize: 10, color: 'white', fontWeight: 'bold' },
-  addButton: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addText: { color: '#707070', fontSize: 12, lineHeight: 14 },
-
+  tag: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, margin: 2 },
+  tagText: { fontSize: 10, color: 'black', fontWeight: 'bold' },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',

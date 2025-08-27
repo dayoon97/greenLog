@@ -1,26 +1,48 @@
-import React, { JSX } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Icon, Switch } from '@rneui/themed';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 type HeaderProps = {
   viewMode: 'calendar' | 'photo';
-  onToggle: (value: boolean) => void;
+  onToggle: (isPhoto: boolean) => void;
 };
 
-const Header = ({ viewMode, onToggle }: HeaderProps): JSX.Element => {
+const Header = ({ viewMode, onToggle }: HeaderProps) => {
   return (
     <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>🌱 캘린더</Text>
-      </View>
-      <View style={styles.switchContainer}>
-        <Text style={styles.switchLabel}>🗓️ 캘린더</Text>
-        <Switch
-          value={viewMode === 'photo'}
-          onValueChange={onToggle}
-          color="green"
-        />
-        <Text style={styles.switchLabel}>📸 사진</Text>
+      <Text style={styles.title}>🌱 캘린더</Text>
+      <View style={styles.toggleContainer}>
+        <TouchableOpacity
+          style={[
+            styles.toggleButton,
+            viewMode === 'calendar' && styles.activeButton,
+          ]}
+          onPress={() => onToggle(false)}
+        >
+          <Text
+            style={[
+              styles.toggleText,
+              viewMode === 'calendar' && styles.activeText,
+            ]}
+          >
+            🗓️ 캘린더
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.toggleButton,
+            viewMode === 'photo' && styles.activeButton,
+          ]}
+          onPress={() => onToggle(true)}
+        >
+          <Text
+            style={[
+              styles.toggleText,
+              viewMode === 'photo' && styles.activeText,
+            ]}
+          >
+            📸 사진
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -28,30 +50,27 @@ const Header = ({ viewMode, onToggle }: HeaderProps): JSX.Element => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    backgroundColor: 'white',
+    paddingVertical: 12,
+    backgroundColor: '#fff',
   },
-  titleContainer: {
+  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  toggleContainer: {
     flexDirection: 'row',
+    borderRadius: 8,
+    backgroundColor: '#eee',
+    overflow: 'hidden',
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 6,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  switchLabel: {
-    marginHorizontal: 8,
-    fontSize: 14,
-  },
+  activeButton: { backgroundColor: 'white' },
+  toggleText: { fontSize: 12, color: '#888' }, // 비활성
+  activeText: { fontWeight: 'bold', color: '#000' }, // 활성
 });
 
 export default Header;

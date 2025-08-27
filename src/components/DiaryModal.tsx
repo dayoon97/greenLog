@@ -1,6 +1,7 @@
 import React, { useState, useEffect, JSX } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Overlay, Input, Button, Chip } from '@rneui/themed';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { DiaryEntry } from '../types';
 
 const ALL_ACTIVITIES = [
@@ -33,7 +34,7 @@ const DiaryModal = ({
 }: DiaryModalProps): JSX.Element => {
   const [activities, setActivities] = useState<string[]>([]);
   const [memo, setMemo] = useState('');
-  const [photoUri, setPhotoUri] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | undefined>('');
 
   useEffect(() => {
     if (initialData) {
@@ -47,6 +48,18 @@ const DiaryModal = ({
     }
   }, [initialData, isVisible]);
 
+  const handleChoosePhoto = () => {
+    launchImageLibrary({ mediaType: 'photo' }, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets && response.assets[0].uri) {
+        setPhotoUri(response.assets[0].uri);
+      }
+    });
+  };
+
   const toggleActivity = (activity: string) => {
     setActivities(prev =>
       prev.includes(activity)
@@ -56,13 +69,28 @@ const DiaryModal = ({
   };
 
   const handleSave = () => {
-    onSave({ date, activities, memo, photoUri });
-    onClose();
+    try {
+      onSave({
+        date,
+        activities: activities || [],
+        memo: memo || '',
+        photoUri: photoUri || '',
+      });
+    } catch (error) {
+      console.error('Diary save error:', error);
+    } finally {
+      onClose();
+    }
   };
 
   const handleDelete = () => {
-    onDelete(date);
-    onClose();
+    try {
+      onDelete(date);
+    } catch (error) {
+      console.error('Diary delete error:', error);
+    } finally {
+      onClose();
+    }
   };
 
   return (
@@ -100,12 +128,27 @@ const DiaryModal = ({
         </View>
 
         <Text style={styles.label}>사진</Text>
-        <TouchableOpacity style={styles.photoInput}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginRight: 6 }}>
-            +
-          </Text>
-          <Text style={styles.photoInputText}>사진 추가</Text>
-        </TouchableOpacity>
+        {photoUri ? (
+          <View style={styles.photoContainer}>
+            <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+            <TouchableOpacity
+              style={styles.photoRemoveButton}
+              onPress={() => setPhotoUri('')}
+            >
+              <Text style={styles.photoRemoveButtonText}>X</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.photoInput}
+            onPress={handleChoosePhoto}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginRight: 6 }}>
+              +
+            </Text>
+            <Text style={styles.photoInputText}>사진 추가</Text>
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.label}>메모</Text>
         <Input
@@ -145,7 +188,6 @@ const DiaryModal = ({
   );
 };
 
-// 스타일 코드는 수정할 필요 없습니다.
 const styles = StyleSheet.create({
   overlay: { borderRadius: 24, padding: 24, width: '90%' },
   modalTitle: {
@@ -164,6 +206,30 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#555' },
   chipContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
   chip: { margin: 4 },
+  photoContainer: {
+    marginBottom: 16,
+  },
+  photoPreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+  },
+  photoRemoveButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoRemoveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   photoInput: {
     height: 80,
     borderWidth: 1,
