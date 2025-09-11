@@ -25,6 +25,7 @@ const ALL_ACTIVITIES = [
   '가지치기',
   '해충방제',
   '수확',
+  '기타',
 ];
 
 type DiaryModalProps = {

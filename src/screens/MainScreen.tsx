@@ -75,7 +75,9 @@ const getActivityColor = (activity: string): string => {
     case '해충방제':
       return '#EF4444';
     case '수확':
-      return '#ff87f3ff';
+      return '#ff87f3';
+    case '기타':
+      return '#9CA3AF';
     default:
       return '#9CA3AF';
   }

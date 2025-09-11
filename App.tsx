@@ -7,7 +7,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DiaryEntry } from './src/types';
-import { MOCK_DIARIES } from './src/mockData';
 import DiaryModal from './src/components/DiaryModal';
 import MainScreen from './src/screens/MainScreen';
 // import AppNavigator from './src/navigation/AppNavigator';
@@ -18,7 +17,7 @@ const theme = createTheme({}); // 이 테마는 ThemeProvider에 전달되지만
 const DIARIES_STORAGE_KEY = '@greenlog_diaries';
 
 const App = (): JSX.Element => {
-  const [diaries, setDiaries] = useState<DiaryEntry[]>(MOCK_DIARIES);
+  const [diaries, setDiaries] = useState<DiaryEntry[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [editingEntry, setEditingEntry] = useState<DiaryEntry | undefined>(
@@ -34,9 +33,6 @@ const App = (): JSX.Element => {
       const jsonValue = await AsyncStorage.getItem(DIARIES_STORAGE_KEY);
       if (jsonValue !== null) {
         setDiaries(JSON.parse(jsonValue));
-      } else {
-        // 저장된 데이터가 없으면 목업 데이터로 시작
-        setDiaries(MOCK_DIARIES);
       }
     } catch (e) {
       console.error('Failed to load diaries from storage', e);
