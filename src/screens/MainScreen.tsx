@@ -14,6 +14,7 @@ import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DiaryEntry } from '../types';
 import Header from '../components/Header';
+import GameScreen from './GameScreen';
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
@@ -44,7 +45,15 @@ LocaleConfig.locales['ko'] = {
     '11월',
     '12월',
   ],
-  dayNames: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+  dayNames: [
+    '일요일',
+    '월요일',
+    '화요일',
+    '수요일',
+    '목요일',
+    '금요일',
+    '토요일',
+  ],
   dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
 };
 LocaleConfig.defaultLocale = 'ko';
@@ -115,8 +124,7 @@ const CustomDay = React.memo(
                 style={[
                   styles.tag,
                   {
-                    backgroundColor:
-                      getActivityColor(activity) + '30',
+                    backgroundColor: getActivityColor(activity) + '30',
                   },
                 ]}
               >
@@ -149,7 +157,9 @@ type MainScreenProps = {
 
 const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets();
-  const [viewMode, setViewMode] = useState<'calendar' | 'photo'>('calendar');
+  const [viewMode, setViewMode] = useState<'calendar' | 'photo' | 'game'>(
+    'calendar',
+  );
 
   const markedDates = useMemo(() => {
     return diaries.reduce((acc, entry) => {
@@ -171,10 +181,7 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
 
   return (
     <View style={[styles.screenContainer, { paddingTop: insets.top }]}>
-      <Header
-        viewMode={viewMode}
-        onToggle={isPhoto => setViewMode(isPhoto ? 'photo' : 'calendar')}
-      />
+      <Header viewMode={viewMode} onToggle={setViewMode} />
       <View style={styles.contentContainer}>
         <View
           style={{
@@ -250,6 +257,14 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
               </Text>
             </View>
           )}
+        </View>
+        <View
+          style={{
+            flex: 1,
+            display: viewMode === 'game' ? 'flex' : 'none',
+          }}
+        >
+          <GameScreen />
         </View>
       </View>
     </View>

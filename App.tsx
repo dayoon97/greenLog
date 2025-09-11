@@ -1,11 +1,15 @@
 import React, { useState, JSX } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View, StatusBar } from 'react-native';
-import { ThemeProvider, createTheme } from '@rneui/themed'; // createTheme을 ThemeProvider 옆에서 직접 import합니다.
+import { ThemeProvider, createTheme } from '@rneui/themed';
+import { NavigationContainer } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import { DiaryEntry } from './src/types';
 import { MOCK_DIARIES } from './src/mockData';
-import MainScreen from './src/screens/MainScreen';
 import DiaryModal from './src/components/DiaryModal';
+import MainScreen from './src/screens/MainScreen';
+// import AppNavigator from './src/navigation/AppNavigator';
 
 // RNE UI 라이브러리 테마 (필요 시 확장)
 const theme = createTheme({}); // 이 테마는 ThemeProvider에 전달되지만, 현재 비어있음
@@ -30,13 +34,12 @@ const App = (): JSX.Element => {
       const existingIndex = prev.findIndex(d => d.date === newEntryData.date);
 
       if (existingIndex > -1) {
-        // 기록이 있으면, 기존 배열을 복사하고 해당 항목만 교체합니다.
-        const updatedDiaries = [...prev];
-        updatedDiaries[existingIndex] = {
-          ...updatedDiaries[existingIndex],
-          ...newEntryData,
-        };
-        return updatedDiaries;
+        // 기록이 있으면, map을 사용하여 해당 항목만 업데이트합니다.
+        return prev.map(entry =>
+          entry.date === newEntryData.date
+            ? { ...entry, ...newEntryData }
+            : entry,
+        );
       } else {
         // 기록이 없으면, 새 기록을 배열에 추가합니다.
         const maxId = prev.reduce((max, entry) => {
@@ -54,22 +57,26 @@ const App = (): JSX.Element => {
   };
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider theme={theme}>
-        <View style={styles.appContainer}>
-          <StatusBar barStyle="dark-content" />
-          <MainScreen diaries={diaries} onDayPress={handleDayPress} />
-          <DiaryModal
-            isVisible={isModalVisible}
-            onClose={() => setModalVisible(false)}
-            onSave={handleSaveDiary}
-            onDelete={handleDeleteDiary}
-            date={selectedDate}
-            initialData={editingEntry}
-          />
-        </View>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider theme={theme}>
+          <NavigationContainer>
+            <View style={styles.appContainer}>
+              <StatusBar barStyle="dark-content" />
+              <MainScreen diaries={diaries} onDayPress={handleDayPress} />
+              <DiaryModal
+                isVisible={isModalVisible}
+                onClose={() => setModalVisible(false)}
+                onSave={handleSaveDiary}
+                onDelete={handleDeleteDiary}
+                date={selectedDate}
+                initialData={editingEntry}
+              />
+            </View>
+          </NavigationContainer>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 

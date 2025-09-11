@@ -1,9 +1,22 @@
-import React, { useState, useEffect, JSX } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Overlay, Input, Button, Chip } from '@rneui/themed';
+import React, { useState, useEffect } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { DiaryEntry } from '../types';
 
+// MainScreen.tsx의 getActivityColor를 기반으로 활동 목록을 정의합니다.
 const ALL_ACTIVITIES = [
   '물주기',
   '잎정리',
@@ -12,7 +25,6 @@ const ALL_ACTIVITIES = [
   '가지치기',
   '해충방제',
   '수확',
-  '기타',
 ];
 
 type DiaryModalProps = {
@@ -31,22 +43,35 @@ const DiaryModal = ({
   onDelete,
   date,
   initialData,
-}: DiaryModalProps): JSX.Element => {
+}: DiaryModalProps) => {
+  const [notes, setNotes] = useState('');
   const [activities, setActivities] = useState<string[]>([]);
-  const [memo, setMemo] = useState('');
-  const [photoUri, setPhotoUri] = useState<string | undefined>('');
+  const [photoUri, setPhotoUri] = useState<string | undefined>();
 
   useEffect(() => {
-    if (initialData) {
-      setActivities(initialData.activities || []);
-      setMemo(initialData.memo || '');
-      setPhotoUri(initialData.photoUri || '');
-    } else {
-      setActivities([]);
-      setMemo('');
-      setPhotoUri('');
+    if (isVisible) {
+      if (initialData) {
+        setNotes(initialData.notes || '');
+        setActivities(initialData.activities || []);
+        setPhotoUri(initialData.photoUri);
+      } else {
+        // 새 일기를 위해 폼을 초기화합니다.
+        setNotes('');
+        setActivities([]);
+        setPhotoUri(undefined);
+      }
     }
   }, [initialData, isVisible]);
+
+  const handleSave = () => {
+    onSave({ date, notes, activities, photoUri });
+    onClose();
+  };
+
+  const handleDelete = () => {
+    onDelete(date);
+    onClose();
+  };
 
   const handleChoosePhoto = () => {
     launchImageLibrary({ mediaType: 'photo' }, response => {
@@ -54,7 +79,7 @@ const DiaryModal = ({
         console.log('User cancelled image picker');
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorMessage);
-      } else if (response.assets && response.assets[0].uri) {
+      } else if (response.assets && response.assets.length > 0) {
         setPhotoUri(response.assets[0].uri);
       }
     });
@@ -68,194 +93,203 @@ const DiaryModal = ({
     );
   };
 
-  const handleSave = () => {
-    try {
-      onSave({
-        date,
-        activities: activities || [],
-        memo: memo || '',
-        photoUri: photoUri || '',
-      });
-    } catch (error) {
-      console.error('Diary save error:', error);
-    } finally {
-      onClose();
-    }
-  };
-
-  const handleDelete = () => {
-    try {
-      onDelete(date);
-    } catch (error) {
-      console.error('Diary delete error:', error);
-    } finally {
-      onClose();
-    }
-  };
-
   return (
-    <Overlay
-      isVisible={isVisible}
-      onBackdropPress={onClose}
-      overlayStyle={styles.overlay}
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isVisible}
+      onRequestClose={onClose}
     >
-      <View>
-        <Text style={styles.modalTitle}>{date.replace(/-/g, '.')} 기록</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold' }}>X</Text>
-        </TouchableOpacity>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flexOne}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalTitle}>{date}</Text>
 
-        <Text style={styles.label}>활동 선택</Text>
-        <View style={styles.chipContainer}>
-          {ALL_ACTIVITIES.map(act => (
-            <Chip
-              key={act}
-              title={act}
-              type={activities.includes(act) ? 'solid' : 'outline'}
-              onPress={() => toggleActivity(act)}
-              containerStyle={styles.chip}
-              buttonStyle={
-                activities.includes(act)
-                  ? { backgroundColor: 'black' }
-                  : { borderColor: '#ccc' }
-              }
-              titleStyle={{
-                color: activities.includes(act) ? 'white' : 'black',
-                fontWeight: 'bold',
-              }}
-            />
-          ))}
-        </View>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={styles.label}>사진</Text>
+                <TouchableOpacity
+                  style={styles.photoContainer}
+                  onPress={handleChoosePhoto}
+                >
+                  {photoUri ? (
+                    <Image source={{ uri: photoUri }} style={styles.photo} />
+                  ) : (
+                    <View style={styles.photoPlaceholder}>
+                      <Text style={styles.photoPlaceholderText}>
+                        + 사진 추가
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {photoUri && (
+                  <TouchableOpacity
+                    style={styles.removePhotoButton}
+                    onPress={() => setPhotoUri(undefined)}
+                  >
+                    <Text style={styles.removePhotoText}>사진 삭제</Text>
+                  </TouchableOpacity>
+                )}
 
-        <Text style={styles.label}>사진</Text>
-        {photoUri ? (
-          <View style={styles.photoContainer}>
-            <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-            <TouchableOpacity
-              style={styles.photoRemoveButton}
-              onPress={() => setPhotoUri('')}
-            >
-              <Text style={styles.photoRemoveButtonText}>X</Text>
-            </TouchableOpacity>
+                <Text style={styles.label}>활동</Text>
+                <View style={styles.activityContainer}>
+                  {ALL_ACTIVITIES.map(activity => (
+                    <TouchableOpacity
+                      key={activity}
+                      style={[
+                        styles.activityChip,
+                        activities.includes(activity) &&
+                          styles.activityChipSelected,
+                      ]}
+                      onPress={() => toggleActivity(activity)}
+                    >
+                      <Text
+                        style={[
+                          styles.activityText,
+                          activities.includes(activity) &&
+                            styles.activityTextSelected,
+                        ]}
+                      >
+                        {activity}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={styles.label}>식물 상태 기록</Text>
+                <TextInput
+                  style={styles.textInput}
+                  multiline
+                  placeholder="오늘 식물의 상태는 어떤가요?"
+                  value={notes}
+                  onChangeText={setNotes}
+                />
+              </ScrollView>
+
+              <View style={styles.buttonRow}>
+                {initialData && (
+                  <TouchableOpacity
+                    style={[styles.button, styles.deleteButton]}
+                    onPress={handleDelete}
+                  >
+                    <Text style={styles.buttonText}>삭제</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={[styles.button, styles.closeButton]}
+                  onPress={onClose}
+                >
+                  <Text style={styles.buttonText}>닫기</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.saveButton]}
+                  onPress={handleSave}
+                >
+                  <Text style={styles.buttonText}>저장</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.photoInput}
-            onPress={handleChoosePhoto}
-          >
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginRight: 6 }}>
-              +
-            </Text>
-            <Text style={styles.photoInputText}>사진 추가</Text>
-          </TouchableOpacity>
-        )}
-
-        <Text style={styles.label}>메모</Text>
-        <Input
-          placeholder="오늘의 식물 상태는 어떤가요?"
-          value={memo}
-          onChangeText={setMemo}
-          multiline
-          inputContainerStyle={styles.memoInput}
-          containerStyle={{ paddingHorizontal: 0 }}
-        />
-
-        <View style={styles.buttonContainer}>
-          <Button
-            title="삭제"
-            type="clear"
-            onPress={handleDelete}
-            titleStyle={{ color: 'red' }}
-          />
-          <Button
-            title="취소"
-            type="solid"
-            onPress={onClose}
-            containerStyle={{ flex: 1, marginRight: 8 }}
-            buttonStyle={{ backgroundColor: '#eee' }}
-            titleStyle={{ color: '#555', fontWeight: 'bold' }}
-          />
-          <Button
-            title="저장"
-            onPress={handleSave}
-            containerStyle={{ flex: 1, marginLeft: 8 }}
-            buttonStyle={{ backgroundColor: 'black' }}
-            titleStyle={{ fontWeight: 'bold' }}
-          />
-        </View>
-      </View>
-    </Overlay>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: { borderRadius: 24, padding: 24, width: '90%' },
+  flexOne: { flex: 1 },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    width: '90%',
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginBottom: 15,
     textAlign: 'center',
-    marginBottom: 24,
+    fontSize: 20,
+    fontWeight: 'bold',
   },
-  closeButton: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    padding: 4,
-    zIndex: 1,
-  },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#555' },
-  chipContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
-  chip: { margin: 4 },
+  label: { fontSize: 16, fontWeight: '600', marginTop: 10, marginBottom: 8 },
   photoContainer: {
-    marginBottom: 16,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
   },
-  photoPreview: {
+  photo: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
+    height: '100%',
   },
-  photoRemoveButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+  photoPlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  photoRemoveButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+  photoPlaceholderText: {
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  removePhotoButton: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  removePhotoText: {
+    color: '#EF4444',
     fontSize: 14,
   },
-  photoInput: {
-    height: 80,
-    borderWidth: 1,
+  textInput: {
+    height: 120,
     borderColor: '#ddd',
-    borderStyle: 'dashed',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: '#fafafa',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    textAlignVertical: 'top',
+    fontSize: 16,
   },
-  photoInputText: { marginLeft: 8, color: '#888', fontWeight: 'bold' },
-  memoInput: {
-    borderWidth: 0,
-    backgroundColor: '#fafafa',
-    borderRadius: 8,
-    paddingVertical: 8,
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+    paddingTop: 10,
+    borderTopColor: '#eee',
+    borderTopWidth: 1,
+  },
+  button: { borderRadius: 10, padding: 10, elevation: 2, marginLeft: 10 },
+  saveButton: { backgroundColor: '#22C55E' },
+  closeButton: { backgroundColor: '#9CA3AF' },
+  deleteButton: { backgroundColor: '#EF4444', marginRight: 'auto' },
+  buttonText: { color: 'white', fontWeight: 'bold', textAlign: 'center' },
+  activityContainer: { flexDirection: 'row', flexWrap: 'wrap' },
+  activityChip: {
+    paddingVertical: 6,
     paddingHorizontal: 12,
-    height: 100,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    marginRight: 8,
+    marginBottom: 8,
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    marginTop: 24,
-    alignItems: 'center',
-  },
+  activityChipSelected: { backgroundColor: '#3B82F6' },
+  activityText: { color: '#4B5563', fontSize: 14 },
+  activityTextSelected: { color: 'white' },
 });
 
 export default DiaryModal;

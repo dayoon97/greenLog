@@ -1,22 +1,29 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
+type ViewMode = 'calendar' | 'photo' | 'game';
+
 type HeaderProps = {
-  viewMode: 'calendar' | 'photo';
-  onToggle: (isPhoto: boolean) => void;
+  viewMode: ViewMode;
+  onToggle: (mode: ViewMode) => void;
 };
 
 const Header = ({ viewMode, onToggle }: HeaderProps) => {
+  const titles: Record<ViewMode, string> = {
+    calendar: '🌱 캘린더',
+    photo: '📸 사진',
+    game: '🎮 게임',
+  };
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🌱 캘린더</Text>
+      <Text style={styles.title}>{titles[viewMode]}</Text>
       <View style={styles.toggleContainer}>
         <TouchableOpacity
           style={[
             styles.toggleButton,
             viewMode === 'calendar' && styles.activeButton,
           ]}
-          onPress={() => onToggle(false)}
+          onPress={() => onToggle('calendar')}
         >
           <Text
             style={[
@@ -32,7 +39,7 @@ const Header = ({ viewMode, onToggle }: HeaderProps) => {
             styles.toggleButton,
             viewMode === 'photo' && styles.activeButton,
           ]}
-          onPress={() => onToggle(true)}
+          onPress={() => onToggle('photo')}
         >
           <Text
             style={[
@@ -41,6 +48,22 @@ const Header = ({ viewMode, onToggle }: HeaderProps) => {
             ]}
           >
             📸 사진
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.toggleButton,
+            viewMode === 'game' && styles.activeButton,
+          ]}
+          onPress={() => onToggle('game')}
+        >
+          <Text
+            style={[
+              styles.toggleText,
+              viewMode === 'game' && styles.activeText,
+            ]}
+          >
+            🎮 게임
           </Text>
         </TouchableOpacity>
       </View>
