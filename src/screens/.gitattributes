@@ -1,0 +1,4 @@
+# 이 파일들은 깃허브 언어 통계에서 제외합니다.
+
+package-lock.json linguist-vendored
+*.js linguist-generated=true
