@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, JSX } from 'react';
+import React, { useCallback, useMemo, useState, JSX, useEffect } from 'react';
 import { Pressable } from 'react-native';
 import {
   View,
@@ -14,7 +14,9 @@ import { MarkingProps } from 'react-native-calendars/src/calendar/day/marking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DiaryEntry } from '../types';
 import Header from '../components/Header';
-import GameScreen from './GameScreen';
+import GameLobbyScreen from '../components/GameLobbyScreen';
+import Veggie2048Screen from '../components/Veggie2048Screen';
+import CornFarmingGameScreen from '../components/CornFarmingGameScreen';
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
@@ -160,6 +162,9 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
   const [viewMode, setViewMode] = useState<'calendar' | 'photo' | 'game'>(
     'calendar',
   );
+  const [activeGame, setActiveGame] = useState<'lobby' | '2048' | 'corn'>(
+    'lobby',
+  );
 
   const markedDates = useMemo(() => {
     return diaries.reduce((acc, entry) => {
@@ -178,6 +183,13 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
     () => diaries.filter(d => d.photoUri),
     [diaries],
   );
+
+  // 게임 탭을 벗어나면 로비로 리셋
+  useEffect(() => {
+    if (viewMode !== 'game') {
+      setActiveGame('lobby');
+    }
+  }, [viewMode]);
 
   return (
     <View style={[styles.screenContainer, { paddingTop: insets.top }]}>
@@ -264,7 +276,15 @@ const MainScreen = ({ diaries, onDayPress }: MainScreenProps): JSX.Element => {
             display: viewMode === 'game' ? 'flex' : 'none',
           }}
         >
-          <GameScreen />
+          {activeGame === 'lobby' && (
+            <GameLobbyScreen onSelectGame={setActiveGame} />
+          )}
+          {activeGame === '2048' && (
+            <Veggie2048Screen onBack={() => setActiveGame('lobby')} />
+          )}
+          {activeGame === 'corn' && (
+            <CornFarmingGameScreen onBack={() => setActiveGame('lobby')} />
+          )}
         </View>
       </View>
     </View>

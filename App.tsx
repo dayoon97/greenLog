@@ -1,10 +1,11 @@
-import React, { useState, JSX } from 'react';
+import React, { useState, useEffect, JSX } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View, StatusBar } from 'react-native';
 import { ThemeProvider, createTheme } from '@rneui/themed';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DiaryEntry } from './src/types';
 import { MOCK_DIARIES } from './src/mockData';
 import DiaryModal from './src/components/DiaryModal';
@@ -14,6 +15,8 @@ import MainScreen from './src/screens/MainScreen';
 // RNE UI 라이브러리 테마 (필요 시 확장)
 const theme = createTheme({}); // 이 테마는 ThemeProvider에 전달되지만, 현재 비어있음
 
+const DIARIES_STORAGE_KEY = '@greenlog_diaries';
+
 const App = (): JSX.Element => {
   const [diaries, setDiaries] = useState<DiaryEntry[]>(MOCK_DIARIES);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -21,6 +24,33 @@ const App = (): JSX.Element => {
   const [editingEntry, setEditingEntry] = useState<DiaryEntry | undefined>(
     undefined,
   );
+
+  useEffect(() => {
+    loadDiaries();
+  }, []);
+
+  const loadDiaries = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(DIARIES_STORAGE_KEY);
+      if (jsonValue !== null) {
+        setDiaries(JSON.parse(jsonValue));
+      } else {
+        // 저장된 데이터가 없으면 목업 데이터로 시작
+        setDiaries(MOCK_DIARIES);
+      }
+    } catch (e) {
+      console.error('Failed to load diaries from storage', e);
+    }
+  };
+
+  const saveDiariesToStorage = async (newDiaries: DiaryEntry[]) => {
+    try {
+      const jsonValue = JSON.stringify(newDiaries);
+      await AsyncStorage.setItem(DIARIES_STORAGE_KEY, jsonValue);
+    } catch (e) {
+      console.error('Failed to save diaries to storage', e);
+    }
+  };
 
   const handleDayPress = (date: string) => {
     setSelectedDate(date);
@@ -30,30 +60,31 @@ const App = (): JSX.Element => {
   };
 
   const handleSaveDiary = (newEntryData: Omit<DiaryEntry, 'id'>) => {
-    setDiaries(prev => {
-      const existingIndex = prev.findIndex(d => d.date === newEntryData.date);
+    const existingIndex = diaries.findIndex(d => d.date === newEntryData.date);
+    let updatedDiaries: DiaryEntry[];
 
-      if (existingIndex > -1) {
-        // 기록이 있으면, map을 사용하여 해당 항목만 업데이트합니다.
-        return prev.map(entry =>
-          entry.date === newEntryData.date
-            ? { ...entry, ...newEntryData }
-            : entry,
-        );
-      } else {
-        // 기록이 없으면, 새 기록을 배열에 추가합니다.
-        const maxId = prev.reduce((max, entry) => {
-          const entryId = parseInt(entry.id, 10);
-          return isNaN(entryId) ? max : Math.max(max, entryId);
-        }, 0);
-        const newId = (maxId + 1).toString();
-        return [...prev, { id: newId, ...newEntryData }];
-      }
-    });
+    if (existingIndex > -1) {
+      updatedDiaries = diaries.map(entry =>
+        entry.date === newEntryData.date
+          ? { ...entry, ...newEntryData }
+          : entry,
+      );
+    } else {
+      const maxId = diaries.reduce((max, entry) => {
+        const entryId = parseInt(entry.id, 10);
+        return isNaN(entryId) ? max : Math.max(max, entryId);
+      }, 0);
+      const newId = (maxId + 1).toString();
+      updatedDiaries = [...diaries, { id: newId, ...newEntryData }];
+    }
+    setDiaries(updatedDiaries);
+    saveDiariesToStorage(updatedDiaries);
   };
 
   const handleDeleteDiary = (dateToDelete: string) => {
-    setDiaries(prev => prev.filter(d => d.date !== dateToDelete));
+    const updatedDiaries = diaries.filter(d => d.date !== dateToDelete);
+    setDiaries(updatedDiaries);
+    saveDiariesToStorage(updatedDiaries);
   };
 
   return (
