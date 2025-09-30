@@ -9,7 +9,7 @@
 
   * 캘린더 기반 일기 작성 및 관리
   * 사진 업로드 및 갤러리 뷰
-  * 채소 2048 게임 및 옥수수 키우기 게임 제공
+  * 채소 2048 게임 제공
 
 -----
 
@@ -28,34 +28,7 @@
 
 ## 📂 3. 폴더 구조
 
-```plaintext
-greenlog/
-├── App.tsx # 앱 진입점 및 전체 로직 관리
-├── index.js # React Native 앱 시작 파일
-├── ... # 기타 설정 파일
-├── src/
-│ ├── components/ # 재사용 가능한 UI 컴포넌트
-│ │ ├── DiaryModal.tsx # 일기 작성/수정 모달
-│ │ ├── GameLobbyScreen.tsx # 게임 로비 화면
-│ │ ├── Tile.tsx # 2048 게임 타일 컴포넌트
-│ │ └── ...
-│ ├── constants.ts # 앱 내 상수 정의
-│ ├── mockData.ts # 개발용 Mock 데이터
-│ ├── navigation/ # React Navigation 설정
-│ │ └── AppNavigator.tsx # 앱 네비게이터
-│ ├── screens/ # 앱 화면 (페이지)
-│ │ ├── CalendarScreen.tsx # 캘린더 화면
-│ │ ├── GameScreen.tsx # 게임 화면 (2048)
-│ │ ├── MainScreen.tsx # 메인 화면 (캘린더, 사진)
-│ │ ├── LoginScreen.tsx # 로그인 화면
-│ │ └── ...
-│ ├── theme/ # 앱 테마 설정
-│ │ └── theme.ts # RNE 테마 정의
-│ ├── types.ts # 타입 정의
-│ └── utils/ # 유틸리티 함수
-│ └── gameLogic.ts # 게임 로직
-└── ...
-```
+생략
 
 -----
 
