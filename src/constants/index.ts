@@ -23,4 +23,6 @@ export const TILE_STYLES: Record<number, { emoji: string; color: string }> = {
   8192: { emoji: '🌊', color: '#0f1f11' }, // 파도 (바다의 깊이를 담은 색)
   16384: { emoji: '🌌', color: '#0a170a' }, // 은하수 (가장 어둡고 신비로운 색)
   32768: { emoji: '🏆', color: '#050f05' }, // 최종 목표 또는 트로피
+  65536: { emoji: '💎', color: '#020702' }, // 다이아몬드 (더욱 깊은 어둠)
+  131072: { emoji: '👑', color: '#000000' }, // 왕관 (완전한 어둠, 정점)
 };

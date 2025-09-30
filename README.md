@@ -1,97 +1,108 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
-# Getting Started
+# 🍀 GreenLog: 개인 식물 관리 기록 앱
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 📝 1. 프로젝트 개요
 
-## Step 1: Start Metro
+**프로젝트 이름:** GreenLog
+**설명:** 개인적인 식물 관리 및 성장 과정을 기록하고 관리하는 모바일 앱입니다. 캘린더를 통해 식물 관리를 기록하고, 사진을 통해 성장을 한눈에 확인할 수 있습니다.
+**주요 기능:**
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+  * 캘린더 기반 일기 작성 및 관리
+  * 사진 업로드 및 갤러리 뷰
+  * 채소 2048 게임 및 옥수수 키우기 게임 제공
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+-----
 
-```sh
-# Using npm
-npm start
+## 💻 2. 기술 스택
 
-# OR using Yarn
-yarn start
+**개발 언어:** TypeScript
+**프레임워크:** React Native
+**상태 관리:** `useState`, `useMemo`, `useCallback`, `useSharedValue`, `useAnimatedReaction` (Reanimated v3)
+**UI 라이브러리:** React Native Elements (RNE)
+**데이터 저장:** AsyncStorage
+**탐색:** React Navigation
+**제스처 처리:** `react-native-gesture-handler`
+**코드 스타일:** ESLint, Prettier
+
+-----
+
+## 📂 3. 폴더 구조
+
+```plaintext
+greenlog/
+├── App.tsx # 앱 진입점 및 전체 로직 관리
+├── index.js # React Native 앱 시작 파일
+├── ... # 기타 설정 파일
+├── src/
+│ ├── components/ # 재사용 가능한 UI 컴포넌트
+│ │ ├── DiaryModal.tsx # 일기 작성/수정 모달
+│ │ ├── GameLobbyScreen.tsx # 게임 로비 화면
+│ │ ├── Tile.tsx # 2048 게임 타일 컴포넌트
+│ │ └── ...
+│ ├── constants.ts # 앱 내 상수 정의
+│ ├── mockData.ts # 개발용 Mock 데이터
+│ ├── navigation/ # React Navigation 설정
+│ │ └── AppNavigator.tsx # 앱 네비게이터
+│ ├── screens/ # 앱 화면 (페이지)
+│ │ ├── CalendarScreen.tsx # 캘린더 화면
+│ │ ├── GameScreen.tsx # 게임 화면 (2048)
+│ │ ├── MainScreen.tsx # 메인 화면 (캘린더, 사진)
+│ │ ├── LoginScreen.tsx # 로그인 화면
+│ │ └── ...
+│ ├── theme/ # 앱 테마 설정
+│ │ └── theme.ts # RNE 테마 정의
+│ ├── types.ts # 타입 정의
+│ └── utils/ # 유틸리티 함수
+│ └── gameLogic.ts # 게임 로직
+└── ...
 ```
 
-## Step 2: Build and run your app
+-----
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## ✨ 4. 주요 컴포넌트 및 기능 설명
 
-### Android
+  * **App.tsx**:
 
-```sh
-# Using npm
-npm run android
+      * 앱의 전체적인 상태를 관리합니다. (`diaries`, `isModalVisible`, `selectedDate`, `editingEntry`)
+      * `AsyncStorage`를 이용해 일기 데이터를 영구적으로 저장하고 불러옵니다.
+      * `DiaryModal`을 통해 **일기 작성, 수정, 삭제** 기능을 제공합니다.
+      * `MainScreen`을 렌더링하여 앱의 핵심 화면을 표시합니다.
 
-# OR using Yarn
-yarn android
-```
+  * **MainScreen.tsx**:
 
-### iOS
+      * **캘린더**, **사진 뷰**, **게임 탭**을 관리하며 탭 간 화면 전환을 담당합니다.
+      * 일기 데이터 기반으로 캘린더에 활동을 표시해줍니다.
+      * 사진 데이터 목록을 갤러리 형태로 보여줍니다.
+      * '게임' 탭에서 게임 로비 또는 개별 게임을 실행합니다.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+  * **DiaryModal.tsx**:
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+      * 일기 작성 및 수정을 위한 **모달 컴포넌트**입니다.
+      * 날짜, 활동 선택, 메모 작성, 사진 업로드 기능을 제공합니다.
 
-```sh
-bundle install
-```
+  * **GameLobbyScreen.tsx**:
 
-Then, and every time you update your native dependencies, run:
+      * 사용자가 선택할 수 있는 게임 목록(채소 2048, 옥수수 키우기)을 표시합니다.
+      * 게임 선택 시 해당 게임 화면으로 이동합니다.
 
-```sh
-bundle exec pod install
-```
+  * **Veggie2048Screen.tsx**:
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+      * **채소 2048 게임의 로직 및 UI**를 구현합니다.
 
-```sh
-# Using npm
-npm run ios
+  * **CornFarmingGameScreen.tsx**:
 
-# OR using Yarn
-yarn ios
-```
+      * **옥수수 키우기 게임의 로직 및 UI**를 구현합니다.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+  * **Tile.tsx**:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+      * 2048 게임에서 **타일 UI를 표시**하고 애니메이션을 처리합니다.
 
-## Step 3: Modify your app
+-----
 
-Now that you have successfully run the app, let's make changes!
+## 🎨 5. 주요 스타일
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+  * 앱 전체적으로 **밝고 자연 친화적인 색상**을 사용합니다. (예: 연한 녹색, 베이지색)
+  * 컴포넌트 간의 일관성을 유지하기 위해 React Native Elements (RNE)의 기본 스타일을 적극적으로 활용합니다.
+  * `StyleSheet.create`를 사용하여 스타일을 명확하게 정의하고 관리합니다.
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+-----

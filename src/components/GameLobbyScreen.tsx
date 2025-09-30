@@ -23,7 +23,7 @@ const GameLobbyScreen = ({ onSelectGame }: GameLobbyScreenProps) => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.gameCard}
           onPress={() => onSelectGame('corn')}
         >
@@ -34,7 +34,15 @@ const GameLobbyScreen = ({ onSelectGame }: GameLobbyScreenProps) => {
           <Text style={styles.gameDescription}>
             나만의 옥수수를 정성껏 키워보세요!
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+
+        <View style={[styles.gameCard, styles.disabledGameCard]}>
+          <View style={[styles.gameImage, { backgroundColor: '#e0e0e0' }]}>
+            <Text style={styles.gameEmoji}>?</Text>
+          </View>
+          <Text style={styles.gameTitle}>준비 중...</Text>
+          <Text style={styles.gameDescription}>새로운 게임을 준비하고 있어요!</Text>
+        </View>
       </View>
     </View>
   );
@@ -69,6 +77,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  disabledGameCard: {
+    backgroundColor: '#f5f5f5',
   },
   gameImage: {
     width: 120,

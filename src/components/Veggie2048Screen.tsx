@@ -155,18 +155,21 @@ const Veggie2048Screen = ({ onBack }: Veggie2048ScreenProps) => {
       });
 
       const canMove = checkIfGameCanMove(board);
-      const has2048Tile = currentTiles.some(tile => tile.value === 2048);
+      // const has2048Tile = currentTiles.some(tile => tile.value === 2048);
 
-      if (has2048Tile) {
-        isGameOver.value = true;
-        Alert.alert('🎉 승리!', `점수: ${scoreForAlert}`, [
-          { text: '다시 시작', onPress: () => initGame('classic') },
-        ]);
-        return;
-      }
+      // if (has2048Tile) {
+      //   isGameOver.value = true;
+      //   Alert.alert('🎉 승리!', `점수: ${scoreForAlert}`, [
+      //     { text: '다시 시작', onPress: () => initGame('classic') },
+      //   ]);
+      //   return;
+      // }
 
       if (!canMove) {
         isGameOver.value = true;
+        Alert.alert('GameOver', `점수: ${scoreForAlert}`, [
+          { text: '다시 시작', onPress: () => initGame('classic') },
+        ]);
       }
     },
     [isGameOver, initGame],
