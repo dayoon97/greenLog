@@ -4,7 +4,9 @@
 ## 📝 1. 프로젝트 개요
 
 **프로젝트 이름:** GreenLog
+
 **설명:** 개인적인 식물 관리 및 성장 과정을 기록하고 관리하는 모바일 앱입니다. 캘린더를 통해 식물 관리를 기록하고, 사진을 통해 성장을 한눈에 확인할 수 있습니다.
+
 **주요 기능:**
 
   * 캘린더 기반 일기 작성 및 관리
@@ -16,12 +18,19 @@
 ## 💻 2. 기술 스택
 
 **개발 언어:** TypeScript
+
 **프레임워크:** React Native
+
 **상태 관리:** `useState`, `useMemo`, `useCallback`, `useSharedValue`, `useAnimatedReaction` (Reanimated v3)
+
 **UI 라이브러리:** React Native Elements (RNE)
+
 **데이터 저장:** AsyncStorage
+
 **탐색:** React Navigation
+
 **제스처 처리:** `react-native-gesture-handler`
+
 **코드 스타일:** ESLint, Prettier
 
 -----
