@@ -93,5 +93,9 @@
 <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-09-16 at 11 09 52" src="https://github.com/user-attachments/assets/10bfc448-f128-4962-ae93-81c7e8984af5" />
 <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-09-16 at 11 12 56" src="https://github.com/user-attachments/assets/5d36d066-6328-4f80-8bab-173aef78d18b" />
 
+-----
+
+## 7. 문의
+ekdbsekdbs@gmail.com
 
 
